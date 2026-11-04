@@ -34,11 +34,11 @@
   input:focus, textarea:focus { outline: 2px solid var(--azul-2); border-color: transparent; }
   textarea { min-height: 70px; resize: vertical; }
   .items { margin-top: 18px; }
-  .item { display: grid; grid-template-columns: 90px 120px 1fr 40px; gap: 8px; margin-bottom: 8px; }
-  @media (max-width: 680px) { .item { grid-template-columns: 70px 90px 1fr 36px; } }
+  .item { display: grid; grid-template-columns: 90px 1fr 40px; gap: 8px; margin-bottom: 8px; }
+  @media (max-width: 680px) { .item { grid-template-columns: 70px 1fr 36px; } }
   .item button { border: 1px solid var(--borde); background: #fff; border-radius: 8px; cursor: pointer; color: var(--error); font-size: 1.1rem; }
-  .cab-items { display: grid; grid-template-columns: 90px 120px 1fr 40px; gap: 8px; }
-  @media (max-width: 680px) { .cab-items { grid-template-columns: 70px 90px 1fr 36px; } }
+  .cab-items { display: grid; grid-template-columns: 90px 1fr 40px; gap: 8px; }
+  @media (max-width: 680px) { .cab-items { grid-template-columns: 70px 1fr 36px; } }
   .acciones { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
   .btn { border: 0; border-radius: 10px; padding: 12px 18px; font: inherit; font-weight: 600; cursor: pointer; }
   .btn-principal { background: var(--azul); color: #fff; }
@@ -83,7 +83,7 @@
       <datalist id="listaPilotos"></datalist>
 
       <div class="items">
-        <div class="cab-items"><label>Cant.</label><label>Unidad</label><label>Descripción</label><span></span></div>
+        <div class="cab-items"><label>Cant.</label><label>Detalle</label><span></span></div>
         <div id="items"></div>
         <button type="button" class="btn btn-sec" id="btnItem">+ Agregar línea</button>
       </div>
@@ -170,8 +170,7 @@ function agregarItem(v) {
   const d = document.createElement('div');
   d.className = 'item';
   d.innerHTML = `<input class="cant" inputmode="decimal" placeholder="1" value="${esc(v.cantidad)}">
-    <input class="uni" placeholder="Unidad" value="${esc(v.unidad)}">
-    <input class="desc" placeholder="Descripción del material o servicio" value="${esc(v.descripcion)}">
+    <input class="desc" placeholder="Detalle del material o servicio" value="${esc(v.descripcion)}">
     <button type="button" title="Quitar">×</button>`;
   d.querySelector('button').onclick = () => { d.remove(); if (!$('items').children.length) agregarItem(); };
   $('items').appendChild(d);
@@ -179,9 +178,8 @@ function agregarItem(v) {
 function leerItems() {
   return [...document.querySelectorAll('#items .item')].map(d => ({
     cantidad: d.querySelector('.cant').value.trim(),
-    unidad: d.querySelector('.uni').value.trim(),
     descripcion: d.querySelector('.desc').value.trim()
-  })).filter(i => i.cantidad || i.unidad || i.descripcion);
+  })).filter(i => i.cantidad || i.descripcion);
 }
 function leerDatos() {
   return { fecha: $('fecha').value, centro: $('centro').value.trim(), piloto: $('piloto').value.trim(),

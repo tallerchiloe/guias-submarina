@@ -92,19 +92,19 @@
     y += 2.5;
 
     const filas = (datos.items || [])
-      .filter(i => i && (i.cantidad || i.unidad || i.descripcion))
-      .map(i => [String(i.cantidad || ''), String(i.unidad || ''), String(i.descripcion || '')]);
-    while (filas.length < 6) filas.push(['', '', '']);
+      .filter(i => i && (i.cantidad || i.descripcion))
+      .map(i => [String(i.cantidad || ''), String(i.descripcion || '')]);
+    while (filas.length < 6) filas.push(['', '']);
 
     tabla({
       startY: y,
       theme: 'grid',
       margin: { left: M, right: M },
-      head: [['Cant.', 'Unidad', 'Descripción']],
+      head: [['Cant.', 'Detalle']],
       body: filas,
       styles: { font: 'helvetica', fontSize: 10, cellPadding: 2.5, minCellHeight: 8, lineColor: BORDE, lineWidth: 0.2, textColor: [30, 30, 30] },
       headStyles: { fillColor: AZUL, textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
-      columnStyles: { 0: { cellWidth: 22, halign: 'center' }, 1: { cellWidth: 30, halign: 'center' } },
+      columnStyles: { 0: { cellWidth: 24, halign: 'center' } },
       alternateRowStyles: { fillColor: [248, 251, 253] }
     });
     y = doc.lastAutoTable.finalY + 9;

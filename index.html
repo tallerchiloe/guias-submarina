@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guías de Despacho · Submarina Chiloé</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="guia-pdf.js"></script>
+<style>
+  :root {
+    --azul: #0b3c5d; --azul-2: #1d6a96; --celeste: #e8f2f8; --fondo: #f3f7fa;
+    --texto: #1d2731; --suave: #5c6b78; --borde: #d3dee6; --blanco: #fff;
+    --ok: #1f8a5b; --error: #c0392b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Inter, system-ui, sans-serif; background: var(--fondo); color: var(--texto); }
+  header { background: var(--azul); color: #fff; padding: 14px 16px; }
+  .barra { max-width: 920px; margin: 0 auto; display: flex; align-items: center; gap: 14px; }
+  .barra img { height: 44px; background: #fff; border-radius: 8px; padding: 4px 8px; }
+  .barra h1 { font-size: 1.15rem; margin: 0; flex: 1; font-weight: 600; }
+  .barra button { background: transparent; border: 1px solid rgba(255,255,255,.4); color: #fff; border-radius: 8px; padding: 8px 12px; cursor: pointer; font: inherit; }
+  main { max-width: 920px; margin: 0 auto; padding: 20px 16px 60px; }
+  .tarjeta { background: var(--blanco); border: 1px solid var(--borde); border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+  .tarjeta h2 { margin: 0 0 16px; font-size: 1.05rem; color: var(--azul); display: flex; align-items: center; gap: 10px; }
+  .proximo { margin-left: auto; font-size: .85rem; background: var(--celeste); color: var(--azul); padding: 4px 10px; border-radius: 99px; font-weight: 600; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 680px) { .grid { grid-template-columns: 1fr; } }
+  label { display: block; font-size: .82rem; font-weight: 600; color: var(--suave); margin-bottom: 5px; }
+  input, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--borde); border-radius: 8px; font: inherit; background: #fff; color: var(--texto); }
+  input:focus, textarea:focus { outline: 2px solid var(--azul-2); border-color: transparent; }
+  textarea { min-height: 70px; resize: vertical; }
+  .items { margin-top: 18px; }
+  .item { display: grid; grid-template-columns: 90px 120px 1fr 40px; gap: 8px; margin-bottom: 8px; }
+  @media (max-width: 680px) { .item { grid-template-columns: 70px 90px 1fr 36px; } }
+  .item button { border: 1px solid var(--borde); background: #fff; border-radius: 8px; cursor: pointer; color: var(--error); font-size: 1.1rem; }
+  .cab-items { display: grid; grid-template-columns: 90px 120px 1fr 40px; gap: 8px; }
+  @media (max-width: 680px) { .cab-items { grid-template-columns: 70px 90px 1fr 36px; } }
+  .acciones { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  .btn { border: 0; border-radius: 10px; padding: 12px 18px; font: inherit; font-weight: 600; cursor: pointer; }
+  .btn-principal { background: var(--azul); color: #fff; }
+  .btn-principal:hover { background: var(--azul-2); }
+  .btn-sec { background: var(--celeste); color: var(--azul); }
+  .btn:disabled { opacity: .55; cursor: wait; }
+  .aviso { margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: .92rem; display: none; }
+  .aviso.ok { display: block; background: #e6f5ee; color: var(--ok); }
+  .aviso.error { display: block; background: #fbeaea; color: var(--error); }
+  .aviso.info { display: block; background: var(--celeste); color: var(--azul); }
+  .aviso a { color: inherit; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--borde); }
+  th { color: var(--suave); font-weight: 600; font-size: .8rem; text-transform: uppercase; }
+  td a { color: var(--azul-2); font-weight: 600; }
+  .tabla-wrap { overflow-x: auto; }
+  dialog { border: 0; border-radius: 14px; padding: 22px; width: min(480px, 92vw); }
+  dialog::backdrop { background: rgba(10, 30, 45, .5); }
+  dialog p { color: var(--suave); font-size: .9rem; margin-top: 0; }
+  dialog .campo { margin-bottom: 14px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="barra">
+    <img src="logo.png" alt="Submarina Chiloé" onerror="this.style.display='none'">
+    <h1>Guías de Despacho</h1>
+    <button id="btnConfig" title="Configuración">⚙ Configurar</button>
+  </div>
+</header>
+
+<main>
+  <section class="tarjeta">
+    <h2>Nueva guía <span class="proximo" id="proximo">N° --</span></h2>
+    <form id="form" autocomplete="off">
+      <div class="grid">
+        <div><label for="fecha">Fecha</label><input type="date" id="fecha" required></div>
+        <div><label for="centro">Centro de cultivo</label><input id="centro" list="listaCentros" required placeholder="Ej: Centro Huyar"></div>
+        <div><label for="piloto">Piloto</label><input id="piloto" list="listaPilotos" required placeholder="Nombre del piloto"></div>
+      </div>
+      <datalist id="listaCentros"></datalist>
+      <datalist id="listaPilotos"></datalist>
+
+      <div class="items">
+        <div class="cab-items"><label>Cant.</label><label>Unidad</label><label>Descripción</label><span></span></div>
+        <div id="items"></div>
+        <button type="button" class="btn btn-sec" id="btnItem">+ Agregar línea</button>
+      </div>
+
+      <div style="margin-top:16px"><label for="obs">Observaciones (opcional)</label><textarea id="obs"></textarea></div>
+
+      <div class="acciones">
+        <button type="submit" class="btn btn-principal" id="btnGenerar">Generar guía PDF</button>
+        <button type="button" class="btn btn-sec" id="btnVista">Vista previa (sin número)</button>
+      </div>
+      <div class="aviso" id="aviso"></div>
+    </form>
+  </section>
+
+  <section class="tarjeta">
+    <h2>Historial <button class="btn btn-sec" id="btnRecargar" style="margin-left:auto;padding:6px 12px;font-size:.85rem">Actualizar</button></h2>
+    <div class="tabla-wrap">
+      <table>
+        <thead><tr><th>N°</th><th>Fecha</th><th>Centro de cultivo</th><th>Piloto</th><th>PDF</th></tr></thead>
+        <tbody id="historial"><tr><td colspan="5">Configura la conexión con ⚙ para ver el historial.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<dialog id="dlg">
+  <h2 style="margin-top:0;color:var(--azul)">Configuración</h2>
+  <p>Pega la URL de la aplicación web de Google Apps Script y la clave que aparece al ejecutar "configurar". Se guardan solo en este navegador.</p>
+  <div class="campo"><label for="cfgUrl">URL de Apps Script</label><input id="cfgUrl" placeholder="https://script.google.com/macros/s/.../exec"></div>
+  <div class="campo"><label for="cfgClave">Clave</label><input id="cfgClave" type="password"></div>
+  <div class="acciones">
+    <button class="btn btn-principal" id="cfgGuardar">Guardar y probar</button>
+    <button class="btn btn-sec" id="cfgCerrar">Cerrar</button>
+  </div>
+  <div class="aviso" id="cfgAviso"></div>
+</dialog>
+
+<script>
+// Si quieres, deja aquí la URL fija de tu Apps Script (la clave NO la pongas aquí).
+const URL_APPS_SCRIPT_DEFECTO = 'https://script.google.com/macros/s/AKfycbw2N3DaPIH2NLh9WSZHJMZAjn7TiSxSdJ3AS0sXQ-QZIGTA9cPJO1uA10ok-azXzeZwPg/exec';
+
+const $ = id => document.getElementById(id);
+const almacen = {
+  get(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+};
+const cfg = {
+  get url() { return almacen.get('sc_url') || URL_APPS_SCRIPT_DEFECTO; },
+  get clave() { return almacen.get('sc_clave'); }
+};
+const libPDF = { jsPDF: window.jspdf.jsPDF, autoTable: (doc, o) => doc.autoTable(o) };
+let logo = null;
+
+async function cargarLogo() {
+  try {
+    const r = await fetch('logo.png', { cache: 'no-cache' });
+    if (!r.ok) return null;
+    const b = await r.blob();
+    const dataUrl = await new Promise((ok, mal) => {
+      const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = mal; fr.readAsDataURL(b);
+    });
+    return { dataUrl };
+  } catch (e) { return null; }
+}
+
+async function api(accion, extra) {
+  if (!cfg.url || !cfg.clave) throw new Error('Falta configurar la conexión (botón ⚙).');
+  const r = await fetch(cfg.url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(Object.assign({ accion, clave: cfg.clave }, extra || {}))
+  });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'Error desconocido');
+  return j;
+}
+
+function aviso(el, tipo, html) { el.className = 'aviso ' + tipo; el.innerHTML = html; }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+// ---------- Líneas de detalle ----------
+function agregarItem(v) {
+  v = v || {};
+  const d = document.createElement('div');
+  d.className = 'item';
+  d.innerHTML = `<input class="cant" inputmode="decimal" placeholder="1" value="${esc(v.cantidad)}">
+    <input class="uni" placeholder="Unidad" value="${esc(v.unidad)}">
+    <input class="desc" placeholder="Descripción del material o servicio" value="${esc(v.descripcion)}">
+    <button type="button" title="Quitar">×</button>`;
+  d.querySelector('button').onclick = () => { d.remove(); if (!$('items').children.length) agregarItem(); };
+  $('items').appendChild(d);
+}
+function leerItems() {
+  return [...document.querySelectorAll('#items .item')].map(d => ({
+    cantidad: d.querySelector('.cant').value.trim(),
+    unidad: d.querySelector('.uni').value.trim(),
+    descripcion: d.querySelector('.desc').value.trim()
+  })).filter(i => i.cantidad || i.unidad || i.descripcion);
+}
+function leerDatos() {
+  return { fecha: $('fecha').value, centro: $('centro').value.trim(), piloto: $('piloto').value.trim(),
+           items: leerItems(), observaciones: $('obs').value.trim() };
+}
+function hoy() { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); }
+function limpiar() { $('centro').value = ''; $('piloto').value = ''; $('obs').value = ''; $('items').innerHTML = ''; agregarItem(); $('fecha').value = hoy(); }
+
+// ---------- Historial ----------
+async function cargarHistorial() {
+  const tb = $('historial');
+  if (!cfg.url || !cfg.clave) return;
+  tb.innerHTML = '<tr><td colspan="5">Cargando…</td></tr>';
+  try {
+    const j = await api('listar');
+    $('listaCentros').innerHTML = j.centros.map(c => `<option value="${esc(c)}">`).join('');
+    $('listaPilotos').innerHTML = j.pilotos.map(p => `<option value="${esc(p)}">`).join('');
+    const ultimo = j.guias.length ? Math.max(...j.guias.map(g => Number(g.numero) || 0)) : 0;
+    $('proximo').textContent = 'Próxima: N° ' + GuiaPDF.formatoNumero(ultimo + 1);
+    tb.innerHTML = j.guias.length ? j.guias.map(g => `<tr>
+        <td><strong>${esc(GuiaPDF.formatoNumero(g.numero))}</strong></td><td>${esc(g.fecha)}</td>
+        <td>${esc(g.centro)}</td><td>${esc(g.piloto)}</td>
+        <td>${g.pdf ? `<a href="${esc(g.pdf)}" target="_blank" rel="noopener">Abrir</a>` : '—'}</td></tr>`).join('')
+      : '<tr><td colspan="5">Aún no hay guías. ¡Crea la primera!</td></tr>';
+  } catch (e) {
+    tb.innerHTML = `<tr><td colspan="5" style="color:var(--error)">${esc(e.message)}</td></tr>`;
+  }
+}
+
+// ---------- Generar ----------
+$('form').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const datos = leerDatos();
+  if (!datos.items.length && !confirm('La guía no tiene líneas de detalle. ¿Generarla igual?')) return;
+  const btn = $('btnGenerar'); btn.disabled = true;
+  try {
+    aviso($('aviso'), 'info', 'Reservando número correlativo…');
+    const { numero } = await api('crear', { datos });
+    const num = GuiaPDF.formatoNumero(numero);
+    const doc = GuiaPDF.generarGuiaPDF(libPDF, Object.assign({ numero }, datos), logo);
+    const nombre = `Guia_Despacho_${num}_${datos.centro.replace(/[^\wáéíóúñÁÉÍÓÚÑ-]+/g, '_')}.pdf`;
+    doc.save(nombre);
+    aviso($('aviso'), 'info', `Guía N° ${num} descargada. Guardando copia en Google Drive…`);
+    const base64 = doc.output('datauristring').split(',')[1];
+    const r = await api('guardarPdf', { numero, nombre, base64 });
+    aviso($('aviso'), 'ok', `✅ Guía N° ${num} creada y guardada en Drive. <a href="${esc(r.url)}" target="_blank" rel="noopener">Ver en Drive</a>`);
+    limpiar();
+    cargarHistorial();
+  } catch (e) {
+    aviso($('aviso'), 'error', '⚠ ' + esc(e.message));
+  } finally { btn.disabled = false; }
+});
+
+$('btnVista').onclick = () => {
+  const doc = GuiaPDF.generarGuiaPDF(libPDF, Object.assign({ numero: 'BORRADOR' }, leerDatos()), logo);
+  window.open(doc.output('bloburl'), '_blank');
+};
+$('btnItem').onclick = () => agregarItem();
+$('btnRecargar').onclick = cargarHistorial;
+
+// ---------- Configuración ----------
+$('btnConfig').onclick = () => { $('cfgUrl').value = cfg.url; $('cfgClave').value = cfg.clave; $('cfgAviso').className = 'aviso'; $('dlg').showModal(); };
+$('cfgCerrar').onclick = () => $('dlg').close();
+$('cfgGuardar').onclick = async () => {
+  almacen.set('sc_url', $('cfgUrl').value.trim());
+  almacen.set('sc_clave', $('cfgClave').value.trim());
+  try { await api('ping'); aviso($('cfgAviso'), 'ok', '✅ Conectado con Google Drive.'); cargarHistorial(); setTimeout(() => $('dlg').close(), 900); }
+  catch (e) { aviso($('cfgAviso'), 'error', '⚠ ' + esc(e.message)); }
+};
+
+// ---------- Inicio ----------
+(async function () {
+  limpiar();
+  logo = await cargarLogo();
+  if (!cfg.url || !cfg.clave) $('dlg').showModal(); else cargarHistorial();
+})();
+</script>
+</body>
+</html>

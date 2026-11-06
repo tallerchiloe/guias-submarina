@@ -165,7 +165,7 @@
     }
 
     cajaFirma(M, 'ENTREGA', [
-      { etiqueta: 'Piloto:', valor: datos.piloto || '' },
+      { etiqueta: 'Nombre:' },
       { etiqueta: 'RUT:' }
     ]);
     cajaFirma(M + anchoF + 10, 'RETIRA (INSUMOS / ROV)', [

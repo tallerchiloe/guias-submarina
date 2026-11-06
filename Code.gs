@@ -16,7 +16,7 @@
 const NUMERO_INICIAL = 1;          // Primera guía = 01
 const NOMBRE_HOJA = 'Guias';
 const ENCABEZADOS = ['N° Guía', 'Fecha', 'Centro de cultivo', 'Piloto',
-                     'Detalle', 'Observaciones', 'Creada el', 'PDF'];
+                     'Detalle', 'Observaciones', 'Creada el', 'PDF', 'Retira'];
 
 /** Ejecutar UNA vez: crea carpeta, planilla y clave de acceso. */
 function configurar() {
@@ -94,8 +94,12 @@ function crearGuia(d) {
     const detalle = (d.items || [])
       .map(i => [i.cantidad, i.unidad, i.descripcion].filter(Boolean).join(' '))
       .join(' | ');
+    if (!hoja.getRange(1, 9).getValue()) {
+      hoja.getRange(1, 9).setValue('Retira')
+          .setFontWeight('bold').setBackground('#0b3c5d').setFontColor('#ffffff');
+    }
     hoja.appendRow([numero, d.fecha || '', d.centro, d.piloto, detalle,
-                    d.observaciones || '', new Date(), '']);
+                    d.observaciones || '', new Date(), '', d.retira || '']);
     SpreadsheetApp.flush();
     return { ok: true, numero: numero };
   } finally {
@@ -120,8 +124,8 @@ function guardarPdf(numero, nombre, base64) {
 function listar() {
   const hoja = obtenerHoja();
   const n = hoja.getLastRow() - 1;
-  if (n < 1) return { ok: true, guias: [], centros: [], pilotos: [] };
-  const filas = hoja.getRange(2, 1, n, 8).getValues();
+  if (n < 1) return { ok: true, guias: [], centros: [], pilotos: [], retiran: [] };
+  const filas = hoja.getRange(2, 1, n, 9).getValues();
   const tz = Session.getScriptTimeZone();
   const fmt = v => v instanceof Date ? Utilities.formatDate(v, tz, 'dd-MM-yyyy') : String(v || '');
   const unicos = col => [...new Set(filas.map(f => String(f[col] || '').trim()).filter(Boolean))].sort();
@@ -129,7 +133,7 @@ function listar() {
   const guias = filas.slice(-100).reverse().map(f => ({
     numero: f[0], fecha: fmt(f[1]), centro: f[2], piloto: f[3], pdf: f[7]
   }));
-  return { ok: true, guias: guias, centros: unicos(2), pilotos: unicos(3) };
+  return { ok: true, guias: guias, centros: unicos(2), pilotos: unicos(3), retiran: unicos(8) };
 }
 
 // ---------- utilidades ----------

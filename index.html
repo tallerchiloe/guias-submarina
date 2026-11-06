@@ -90,6 +90,9 @@
 
       <div style="margin-top:16px"><label for="obs">Observaciones (opcional)</label><textarea id="obs"></textarea></div>
 
+      <div style="margin-top:16px"><label for="retira">Retira (quién se lleva los insumos o ROV)</label><input id="retira" list="listaRetira" placeholder="Nombre de quien retira"></div>
+      <datalist id="listaRetira"></datalist>
+
       <div class="acciones">
         <button type="submit" class="btn btn-principal" id="btnGenerar">Generar guía PDF</button>
         <button type="button" class="btn btn-sec" id="btnVista">Vista previa (sin número)</button>
@@ -183,10 +186,10 @@ function leerItems() {
 }
 function leerDatos() {
   return { fecha: $('fecha').value, centro: $('centro').value.trim(), piloto: $('piloto').value.trim(),
-           items: leerItems(), observaciones: $('obs').value.trim() };
+           items: leerItems(), observaciones: $('obs').value.trim(), retira: $('retira').value.trim() };
 }
 function hoy() { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); }
-function limpiar() { $('centro').value = ''; $('piloto').value = ''; $('obs').value = ''; $('items').innerHTML = ''; agregarItem(); $('fecha').value = hoy(); }
+function limpiar() { $('centro').value = ''; $('piloto').value = ''; $('obs').value = ''; $('retira').value = ''; $('items').innerHTML = ''; agregarItem(); $('fecha').value = hoy(); }
 
 // ---------- Historial ----------
 async function cargarHistorial() {
@@ -197,6 +200,7 @@ async function cargarHistorial() {
     const j = await api('listar');
     $('listaCentros').innerHTML = j.centros.map(c => `<option value="${esc(c)}">`).join('');
     $('listaPilotos').innerHTML = j.pilotos.map(p => `<option value="${esc(p)}">`).join('');
+    $('listaRetira').innerHTML = (j.retiran || []).map(p => `<option value="${esc(p)}">`).join('');
     const ultimo = j.guias.length ? Math.max(...j.guias.map(g => Number(g.numero) || 0)) : 0;
     $('proximo').textContent = 'Próxima: N° ' + GuiaPDF.formatoNumero(ultimo + 1);
     tb.innerHTML = j.guias.length ? j.guias.map(g => `<tr>

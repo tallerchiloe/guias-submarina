@@ -127,7 +127,7 @@
     }
 
     // ---------- Firmas ----------
-    const altoF = 40;
+    const altoF = 56;
     if (y + altoF > H - 18) { doc.addPage(); y = M; }
     const yF = Math.max(y, H - 18 - altoF);
     const anchoF = (W - 2 * M - 10) / 2;
@@ -154,17 +154,23 @@
         if (l.valor) doc.text(l.valor, ex, ly);
         else doc.line(ex, ly + 0.8, x + anchoF - 4, ly + 0.8);
       });
+      // Espacio amplio para la firma
+      const lf = yF + altoF - 9;
+      doc.setDrawColor(60, 60, 60);
+      doc.setLineWidth(0.3);
+      doc.line(x + 10, lf, x + anchoF - 10, lf);
+      doc.setFontSize(8.5);
+      doc.setTextColor(...GRIS);
+      doc.text('Firma', x + anchoF / 2, lf + 4.5, { align: 'center' });
     }
 
     cajaFirma(M, 'ENTREGA', [
       { etiqueta: 'Piloto:', valor: datos.piloto || '' },
-      { etiqueta: 'RUT:' },
-      { etiqueta: 'Firma:' }
+      { etiqueta: 'RUT:' }
     ]);
-    cajaFirma(M + anchoF + 10, 'RECIBE CONFORME', [
-      { etiqueta: 'Nombre:' },
-      { etiqueta: 'RUT:' },
-      { etiqueta: 'Firma:' }
+    cajaFirma(M + anchoF + 10, 'RETIRA (INSUMOS / ROV)', [
+      { etiqueta: 'Nombre:', valor: datos.retira || '' },
+      { etiqueta: 'RUT:' }
     ]);
 
     // ---------- Pie de página ----------
